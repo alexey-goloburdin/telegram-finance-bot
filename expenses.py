@@ -1,12 +1,12 @@
 import datetime
 import re
-from typing import NamedTuple, List, Dict
+from typing import NamedTuple
 
 import pytz
 
-from categories import Categories
 import db
 import exceptions
+from categories import Categories
 
 
 class Message(NamedTuple):
@@ -113,10 +113,12 @@ def _parse_message(raw_message: str) -> Message:
 def _get_now_formatted() -> str:
     return _get_now_datetime().strftime("%Y-%m-%d")
 
+
 def _get_now_datetime():
     tz = pytz.timezone("Europe/Moscow")
     now = datetime.datetime.now(tz)
     return now
+
 
 def _get_budget_limit() -> int:
     return db.fetchall("budget", ["daily_limit"])[0]["daily_limit"]

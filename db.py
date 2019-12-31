@@ -1,7 +1,5 @@
-from typing import Dict, Tuple, List
-
 import sqlite3
-
+from typing import Dict, List, Tuple
 
 conn = sqlite3.connect("finance.db")
 cursor = conn.cursor()
