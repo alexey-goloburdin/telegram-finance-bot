@@ -20,4 +20,3 @@ docker build -t tgfinance ./
 docker run -d --name tg -v /local_project_path/db:/home/db tgfinance
 docker run -ti --name tg tgfinance
 ```
-

@@ -5,9 +5,9 @@ from typing import NamedTuple
 
 import pytz
 
-from categories import Categories
 import db
 import exceptions
+from categories import Categories
 
 
 class Message(NamedTuple):
