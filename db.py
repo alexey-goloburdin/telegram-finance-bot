@@ -1,5 +1,5 @@
 import os
-from typing import Dict, Tuple, List
+from typing import Dict, List, Tuple
 
 import sqlite3
 

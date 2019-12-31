@@ -1,7 +1,7 @@
 """ Работа с расходами — их добавление, удаление, статистики"""
 import datetime
 import re
-from typing import NamedTuple, List, Dict
+from typing import NamedTuple
 
 import pytz
 
@@ -119,15 +119,18 @@ def _parse_message(raw_message: str) -> Message:
     category_text = regexp_result.group(2).strip().lower()
     return Message(amount=amount, category_text=category_text)
 
+
 def _get_now_formatted() -> str:
     """Возвращает сегодняшнюю дату строкой"""
     return _get_now_datetime().strftime("%Y-%m-%d")
+
 
 def _get_now_datetime():
     """Возвращает сегодняшний datetime с учётом времненной зоны Мск."""
     tz = pytz.timezone("Europe/Moscow")
     now = datetime.datetime.now(tz)
     return now
+
 
 def _get_budget_limit() -> int:
     """Возвращает дневной лимит трат для основных базовых трат"""
