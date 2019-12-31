@@ -5,6 +5,7 @@ from aiogram import Bot, Dispatcher, executor, types
 import aiohttp
 
 from categories import Categories
+from middlewares import AccessMiddleware
 import exceptions
 import expenses
 
@@ -17,23 +18,14 @@ PROXY_AUTH = aiohttp.BasicAuth(
     login=os.getenv("TELEGRAM_PROXY_LOGIN"),
     password=os.getenv("TELEGRAM_PROXY_PASSWORD")
 )
+ACCESS_ID = os.getenv("TELEGRAM_ACCESS_ID")
 
 bot = Bot(token=API_TOKEN, proxy=PROXY_URL, proxy_auth=PROXY_AUTH)
 dp = Dispatcher(bot)
-
-
-def auth(func):
-
-    async def wrapper(message):
-        if message['from']['id'] != 135637452:
-            return await message.reply("Access Denied", reply=False)
-        return await func(message)
-
-    return wrapper
+dp.middleware.setup(AccessMiddleware(ACCESS_ID))
 
 
 @dp.message_handler(commands=['start', 'help'])
-@auth
 async def send_welcome(message: types.Message):
     await message.reply(
         "Бот для учёта финансов\n\n"
@@ -46,7 +38,6 @@ async def send_welcome(message: types.Message):
 
 
 @dp.message_handler(commands=['categories'])
-@auth
 async def categories_list(message: types.Message):
     categories = Categories().get_all_categories()
     answer_message = "Категории трат:\n\n* " +\
@@ -55,21 +46,18 @@ async def categories_list(message: types.Message):
 
 
 @dp.message_handler(commands=['today'])
-@auth
 async def today_statistics(message: types.Message):
     answer_message = expenses.get_today_statistics()
     await message.reply(answer_message, reply=False)
 
 
 @dp.message_handler(commands=['month'])
-@auth
 async def month_statistics(message: types.Message):
     answer_message = expenses.get_month_statistics()
     await message.reply(answer_message, reply=False)
 
 
 @dp.message_handler(commands=['expenses'])
-@auth
 async def list_expenses(message: types.Message):
     last_expenses = expenses.last()
     if not last_expenses:
@@ -85,7 +73,6 @@ async def list_expenses(message: types.Message):
 
 
 @dp.message_handler(lambda message: message.text.startswith('/del'))
-@auth
 async def del_expense(message: types.Message):
     row_id = int(message.text[4:])
     expenses.delete_expense(row_id)
@@ -94,7 +81,6 @@ async def del_expense(message: types.Message):
 
 
 @dp.message_handler()
-@auth
 async def add_expense(message: types.Message):
     try:
         expense = expenses.add_expense(message.text)
