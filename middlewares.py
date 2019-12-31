@@ -1,3 +1,4 @@
+"""Аутентификация — пропускаем сообщения только от одного Telegram аккаунта"""
 from aiogram import types
 from aiogram.dispatcher.handler import CancelHandler
 from aiogram.dispatcher.middlewares import BaseMiddleware
