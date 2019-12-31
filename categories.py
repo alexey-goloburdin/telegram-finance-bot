@@ -52,9 +52,9 @@ class Categories:
         finded = None
         other_category = None
         for category in self._categories:
-            if category["codename"] == "other":
+            if category.codename == "other":
                 other_category = category
-            for alias in category['aliases']:
+            for alias in category.aliases:
                 if category_name in alias:
                     finded = category
         if not finded:
