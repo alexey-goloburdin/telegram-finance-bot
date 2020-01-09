@@ -1,7 +1,7 @@
 """ Работа с расходами — их добавление, удаление, статистики"""
 import datetime
 import re
-from typing import NamedTuple, List
+from typing import List, NamedTuple, Optional
 
 import pytz
 
@@ -18,13 +18,7 @@ class Message(NamedTuple):
 
 class Expense(NamedTuple):
     """Структура добавленного в БД нового расхода"""
-    amount: int
-    category_name: str
-
-
-class LastExpense(NamedTuple):
-    """Структура последнего добавленного расхода"""
-    id: int
+    id: Optional[int]
     amount: int
     category_name: str
 
@@ -41,7 +35,8 @@ def add_expense(raw_message: str) -> Expense:
         "category_codename": category.codename,
         "raw_text": raw_message
     })
-    return Expense(amount=parsed_message.amount,
+    return Expense(id=None,
+                   amount=parsed_message.amount,
                    category_name=category.name)
 
 
@@ -89,7 +84,7 @@ def get_month_statistics() -> str:
             f"{now.day * _get_budget_limit()} руб.")
 
 
-def last() -> List[LastExpense]:
+def last() -> List[Expense]:
     """Возвращает последние несколько расходов"""
     cursor = db.get_cursor()
     cursor.execute(
@@ -98,7 +93,7 @@ def last() -> List[LastExpense]:
         "on c.codename=e.category_codename "
         "order by created desc limit 10")
     rows = cursor.fetchall()
-    last_expenses = [LastExpense(id=row[0], amount=row[1], category_name=row[2]) for row in rows]
+    last_expenses = [Expense(id=row[0], amount=row[1], category_name=row[2]) for row in rows]
     return last_expenses
 
 
