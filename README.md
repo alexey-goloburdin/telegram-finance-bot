@@ -18,5 +18,19 @@ Telegram бот для учёта личных расходов и ведени�
 ```
 docker build -t tgfinance ./
 docker run -d --name tg -v /local_project_path/db:/home/db tgfinance
-docker run -ti --name tg tgfinance
 ```
+
+Чтобы войти в работающий контейнер:
+
+```
+docker exec -ti tg bash
+```
+
+Войти в контейнере в SQL шелл:
+
+```
+docker exec -ti tg bash
+sqlite3 /home/db/finance.db
+```
+
+
