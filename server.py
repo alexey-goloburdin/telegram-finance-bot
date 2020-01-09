@@ -79,10 +79,11 @@ async def list_expenses(message: types.Message):
         return
 
     last_expenses_rows = [
-        f"{row['amount']} руб. на {row['category_name']} —  нажми "
-        f"/del{row['id']} для удаления"
-        for row in last_expenses]
-    answer_message = "Последние сохранённые траты:\n\n* " + "\n\n* ".join(last_expenses_rows)
+        f"{expense.amount} руб. на {expense.category_name} — нажми "
+        f"/del{expense.id} для удаления"
+        for expense in last_expenses]
+    answer_message = "Последние сохранённые траты:\n\n* " + "\n\n* "\
+            .join(last_expenses_rows)
     await message.answer(answer_message)
 
 
