@@ -1,7 +1,7 @@
 """ Работа с расходами — их добавление, удаление, статистики"""
 import datetime
 import re
-from typing import NamedTuple
+from typing import NamedTuple, List
 
 import pytz
 
@@ -18,6 +18,13 @@ class Message(NamedTuple):
 
 class Expense(NamedTuple):
     """Структура добавленного в БД нового расхода"""
+    amount: int
+    category_name: str
+
+
+class LastExpense(NamedTuple):
+    """Структура последнего добавленного расхода"""
+    id: int
     amount: int
     category_name: str
 
@@ -42,13 +49,13 @@ def get_today_statistics() -> str:
     """Возвращает строкой статистику расходов за сегодня"""
     cursor = db.get_cursor()
     cursor.execute("select sum(amount)"
-                   "from expense where created=current_date")
+                   "from expense where date(created)=date('now', 'localtime')")
     result = cursor.fetchone()
     if not result[0]:
         return "Сегодня ещё нет расходов"
     all_today_expenses = result[0]
     cursor.execute("select sum(amount) "
-                   "from expense where created=current_date "
+                   "from expense where date(created)=date('now', 'localtime') "
                    "and category_codename in (select codename "
                    "from category where is_base_expense=true)")
     result = cursor.fetchone()
@@ -65,13 +72,13 @@ def get_month_statistics() -> str:
     first_day_of_month = f'{now.year:04d}-{now.month:02d}-01'
     cursor = db.get_cursor()
     cursor.execute(f"select sum(amount) "
-                   f"from expense where created >= '{first_day_of_month}'")
+                   f"from expense where date(created) >= '{first_day_of_month}'")
     result = cursor.fetchone()
     if not result[0]:
         return "В этом месяце ещё нет расходов"
     all_today_expenses = result[0]
     cursor.execute(f"select sum(amount) "
-                   f"from expense where created >= '{first_day_of_month}' "
+                   f"from expense where date(created) >= '{first_day_of_month}' "
                    f"and category_codename in (select codename "
                    f"from category where is_base_expense=true)")
     result = cursor.fetchone()
@@ -82,7 +89,7 @@ def get_month_statistics() -> str:
             f"{now.day * _get_budget_limit()} руб.")
 
 
-def last():
+def last() -> List[LastExpense]:
     """Возвращает последние несколько расходов"""
     cursor = db.get_cursor()
     cursor.execute(
@@ -91,13 +98,7 @@ def last():
         "on c.codename=e.category_codename "
         "order by created desc limit 10")
     rows = cursor.fetchall()
-    last_expenses = []
-    for row in rows:
-        last_expenses.append({
-            'amount': row[1],
-            'id': row[0],
-            'category_name': row[2]
-        })
+    last_expenses = [LastExpense(id=row[0], amount=row[1], category_name=row[2]) for row in rows]
     return last_expenses
 
 
@@ -122,10 +123,10 @@ def _parse_message(raw_message: str) -> Message:
 
 def _get_now_formatted() -> str:
     """Возвращает сегодняшнюю дату строкой"""
-    return _get_now_datetime().strftime("%Y-%m-%d")
+    return _get_now_datetime().strftime("%Y-%m-%d %H:%M:%S")
 
 
-def _get_now_datetime():
+def _get_now_datetime() -> datetime.datetime:
     """Возвращает сегодняшний datetime с учётом времненной зоны Мск."""
     tz = pytz.timezone("Europe/Moscow")
     now = datetime.datetime.now(tz)
