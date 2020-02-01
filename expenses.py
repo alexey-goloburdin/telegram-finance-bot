@@ -49,16 +49,42 @@ def get_today_statistics() -> str:
     if not result[0]:
         return "Сегодня ещё нет расходов"
     all_today_expenses = result[0]
-    cursor.execute("select sum(amount) "
-                   "from expense where date(created)=date('now', 'localtime') "
-                   "and category_codename in (select codename "
-                   "from category where is_base_expense=true)")
+    cursor.execute("select sum(amount) from expense where date(created)=date('now', 'localtime') "
+                   "and category_codename in (select codename from category where is_base_expense=true)")
     result = cursor.fetchone()
     base_today_expenses = result[0] if result[0] else 0
     return (f"Расходы сегодня:\n"
             f"всего — {all_today_expenses} руб.\n"
             f"базовые — {base_today_expenses} руб. из {_get_budget_limit()} руб.\n\n"
             f"За текущий месяц: /month")
+
+
+def get_previous_month_statistics() -> str:
+    """Возвращает строкой статистику расходов за предыдущий месяц"""
+    now = _get_now_datetime()
+    prev_last_day = now.replace(day=1) - datetime.timedelta(days=1)
+    prev_first_day = prev_last_day.replace(day=1)
+    first_day_of_previous_month = f'{prev_first_day.year:04d}-{prev_first_day.month:02d}-01'
+    last_day_of_previous_month = f'{prev_last_day.year:04d}-{prev_last_day.month:02d}-{prev_last_day.day}'
+    cursor = db.get_cursor()
+    cursor.execute(f"select sum(amount) "
+                   f"from expense where date(created) "
+                   f"between '{first_day_of_previous_month}' and '{last_day_of_previous_month}'")
+    result = cursor.fetchone()
+    if not result[0]:
+        return "В предыдущем месяце не было расходов"
+    all_prev_month_expenses = result[0]
+    cursor.execute(f"select sum(amount) "
+                   f"from expense where date(created) >= '{first_day_of_previous_month}' "
+                   f"and date(created) <= '{last_day_of_previous_month}'"
+                   f"and category_codename in (select codename "
+                   f"from category where is_base_expense=true)")
+    result = cursor.fetchone()
+    base_prev_month_expenses = result[0] if result[0] else 0
+    return (f"Расходы в предыдущем месяце:\n"
+            f"всего — {all_prev_month_expenses} руб.\n"
+            f"базовые — {base_prev_month_expenses} руб. из "
+            f"{prev_first_day.day * _get_budget_limit()} руб.")
 
 
 def get_month_statistics() -> str:
@@ -111,7 +137,7 @@ def _parse_message(raw_message: str) -> Message:
             "Не могу понять сообщение. Напишите сообщение в формате, "
             "например:\n1500 метро")
 
-    amount = regexp_result.group(1).replace(" ", "")
+    amount = int(regexp_result.group(1).replace(" ", ""))
     category_text = regexp_result.group(2).strip().lower()
     return Message(amount=amount, category_text=category_text)
 

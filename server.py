@@ -70,6 +70,13 @@ async def month_statistics(message: types.Message):
     await message.answer(answer_message)
 
 
+@dp.message_handler(commands=['previous_month'])
+async def previous_month_statistics(message: types.Message):
+    """Отправляет статистику трат предыдущего месяца"""
+    answer_message = expenses.get_previous_month_statistics()
+    await message.answer(answer_message)
+
+
 @dp.message_handler(commands=['expenses'])
 async def list_expenses(message: types.Message):
     """Отправляет последние несколько записей о расходах"""
@@ -82,8 +89,7 @@ async def list_expenses(message: types.Message):
         f"{expense.amount} руб. на {expense.category_name} — нажми "
         f"/del{expense.id} для удаления"
         for expense in last_expenses]
-    answer_message = "Последние сохранённые траты:\n\n* " + "\n\n* "\
-            .join(last_expenses_rows)
+    answer_message = "Последние сохранённые траты:\n\n* " + "\n\n* ".join(last_expenses_rows)
     await message.answer(answer_message)
 
 

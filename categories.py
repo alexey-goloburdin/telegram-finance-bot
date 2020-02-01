@@ -43,7 +43,7 @@ class Categories:
             ))
         return categories_result
 
-    def get_all_categories(self) -> List[Dict]:
+    def get_all_categories(self) -> List[Category]:
         """Возвращает справочник категорий."""
         return self._categories
 
