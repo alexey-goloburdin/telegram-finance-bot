@@ -8,3 +8,4 @@ finance.db
 *.out
 .ipynb_checkpoints
 env/
+.env
