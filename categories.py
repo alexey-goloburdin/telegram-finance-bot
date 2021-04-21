@@ -24,7 +24,8 @@ class Categories:
         categories = self._fill_aliases(categories)
         return categories
 
-    def _fill_aliases(self, categories: List[Dict]) -> List[Category]:
+    @staticmethod
+    def _fill_aliases(categories: List[Dict]) -> List[Category]:
         """Заполняет по каждой категории aliases, то есть возможные
         названия этой категории, которые можем писать в тексте сообщения.
         Например, категория «кафе» может быть написана как cafe,
@@ -43,7 +44,7 @@ class Categories:
             ))
         return categories_result
 
-    def get_all_categories(self) -> List[Dict]:
+    def get_all_categories(self) -> List[Category]:
         """Возвращает справочник категорий."""
         return self._categories
 

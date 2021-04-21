@@ -29,7 +29,7 @@ def add_expense(raw_message: str) -> Expense:
     parsed_message = _parse_message(raw_message)
     category = Categories().get_category(
         parsed_message.category_text)
-    inserted_row_id = db.insert("expense", {
+    db.insert("expense", {
         "amount": parsed_message.amount,
         "created": _get_now_formatted(),
         "category_codename": category.codename,
@@ -111,7 +111,7 @@ def _parse_message(raw_message: str) -> Message:
             "Не могу понять сообщение. Напишите сообщение в формате, "
             "например:\n1500 метро")
 
-    amount = regexp_result.group(1).replace(" ", "")
+    amount = int(regexp_result.group(1).replace(" ", ""))
     category_text = regexp_result.group(2).strip().lower()
     return Message(amount=amount, category_text=category_text)
 
