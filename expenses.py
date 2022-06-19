@@ -42,18 +42,12 @@ def add_expense(raw_message: str) -> Expense:
 
 def get_today_statistics() -> str:
     """Возвращает строкой статистику расходов за сегодня"""
-    cursor = db.get_cursor()
-    cursor.execute("select sum(amount)"
-                   "from expense where date(created)=date('now', 'localtime')")
-    result = cursor.fetchone()
+    result = db.get_amount("today", False)
     if not result[0]:
         return "Сегодня ещё нет расходов"
     all_today_expenses = result[0]
-    cursor.execute("select sum(amount) "
-                   "from expense where date(created)=date('now', 'localtime') "
-                   "and category_codename in (select codename "
-                   "from category where is_base_expense=true)")
-    result = cursor.fetchone()
+
+    result = db.get_amount("today", True)
     base_today_expenses = result[0] if result[0] else 0
     return (f"Расходы сегодня:\n"
             f"всего — {all_today_expenses} руб.\n"
@@ -65,18 +59,12 @@ def get_month_statistics() -> str:
     """Возвращает строкой статистику расходов за текущий месяц"""
     now = _get_now_datetime()
     first_day_of_month = f'{now.year:04d}-{now.month:02d}-01'
-    cursor = db.get_cursor()
-    cursor.execute(f"select sum(amount) "
-                   f"from expense where date(created) >= '{first_day_of_month}'")
-    result = cursor.fetchone()
+    result = db.get_amount(first_day_of_month, False)
     if not result[0]:
         return "В этом месяце ещё нет расходов"
     all_today_expenses = result[0]
-    cursor.execute(f"select sum(amount) "
-                   f"from expense where date(created) >= '{first_day_of_month}' "
-                   f"and category_codename in (select codename "
-                   f"from category where is_base_expense=true)")
-    result = cursor.fetchone()
+
+    result = db.get_amount(first_day_of_month, True)
     base_today_expenses = result[0] if result[0] else 0
     return (f"Расходы в текущем месяце:\n"
             f"всего — {all_today_expenses} руб.\n"
@@ -86,13 +74,7 @@ def get_month_statistics() -> str:
 
 def last() -> List[Expense]:
     """Возвращает последние несколько расходов"""
-    cursor = db.get_cursor()
-    cursor.execute(
-        "select e.id, e.amount, c.name "
-        "from expense e left join category c "
-        "on c.codename=e.category_codename "
-        "order by created desc limit 10")
-    rows = cursor.fetchall()
+    rows = db.last( )
     last_expenses = [Expense(id=row[0], amount=row[1], category_name=row[2]) for row in rows]
     return last_expenses
 
